@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import csv
 import sys
 import os
@@ -14,5 +16,7 @@ else:
             csv.field_size_limit(sys.maxsize)
             with open(filename, 'rb') as ifh, open(newfile, 'wb') as ofh:
                 reader = csv.reader(ifh, delimiter='\t')
+                #seq = ( (r[0], r[1], r[3], r[4]) for r in reader)
+                #csv.writer(ofh, delimiter='|').writerows(seq)
                 csv.writer(ofh, delimiter='|').writerows(reader)
             os.unlink(filename)
