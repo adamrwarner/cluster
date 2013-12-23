@@ -7,33 +7,47 @@ Created on Dec 01, 2013
 '''
 
 import csv
-from pprint import pprint
 from py2neo import neo4j, node, rel
 import sys
 
-in_file  = open("C:/Users/awarner/git/cluster/Cluster/exploit.csv", "rb")
-reader = csv.reader(in_file)
-
 graph_db = neo4j.GraphDatabaseService("http://localhost:7474/db/data/")
-batch = neo4j.WriteBatch(graph_db)
-#print graph_db.get_reference_node()
 
-'''if len(sys.argv) < 2:
+
+if len(sys.argv) < 2:
     sys.exit("Usage: neo_import.py input_filename")
 else:
-    ifile  = open(sys.argv[1], "rb")
-    reader = csv.reader(ifile)'''
-
-for line in in_file.readlines():
-    split_line = line.split('\t')
-    user_id = split_line[0]
-    user_followers = split_line[0]
-    user_followers_list = user_followers.split("\t")
     
-    batch.get_or_create_indexed_node("Users", "user_id", user_id,{"user_id":user_id})
-    print "created user node"
+    with open((sys.argv[1]), 'rb') as in_file:
     
-    for user_follower in user_followers_list:
-        batch.get_or_create_indexed_node("Users", "user_id", user_id, {"user_id":user_id})
-        print "created follower node"
-    nodes = batch.submit() 
+        reader = csv.reader(in_file, delimiter = '|')
+        headers = next(reader, None)
+        
+        batch = neo4j.WriteBatch(graph_db)
+        
+        for h in headers:
+            rel1 = (headers[0]) 
+            node1 = (headers[1])
+            node2 = (headers[2])
+            
+        for row in reader:
+            
+            for col in row:
+                src_ip = row[1]
+                dst_ip = row[2]
+                instance = row[0]
+                packets = row[6]
+                length = row[7]
+                src_port=row[10]
+                dst_port=row[11]
+                protocol=row[13]
+                #src_ip_node=batch.get_or_create_indexed_node('IPs', node1, src_ip, {'src_port':src_port})
+                #dst_ip_node=batch.get_or_create_indexed_node('IPs', node2, dst_ip, {'dst_port':dst_port})
+                #batch.get_or_create_indexed_relationship(index="Attacks", key=rel1, value=instance, start_node=src_ip_node, type_='type', end_node=dst_ip_node, properties={"instance":instance, "protocol":protocol, "packets":packets, "Length":length})
+                src_ip_node = batch.create(node(src_ip=src_ip, src_port=src_port))
+                dst_ip_node = batch.create(node(dst_ip=dst_ip, dst_port=dst_port))
+                
+                batch.create(rel(src_ip_node, ("Attacks", {"instance":instance, "protocol":protocol, "packets":packets, "length":length}), dst_ip_node))
+                print "stuff is happening"
+        batch.submit() 
+            
+                
